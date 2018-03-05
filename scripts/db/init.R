@@ -1,0 +1,1 @@
+system("psql --file=init.sql")

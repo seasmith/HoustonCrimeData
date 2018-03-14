@@ -1,0 +1,96 @@
+# Missing Data Report
+Dedicated to what is not there.
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(naniar)
+library(sf)
+
+old_dir <- setwd("~/R/HoustonCrimeData")
+source("scripts/analysis/load/load.R")
+b_file <- "data/Houston_Police_Beats/Houston_Police_Beats.shp"
+bp <- st_read(b_file)
+```
+
+```{r notes}
+# NOTES -------------------------------------------------------------------
+
+# * Not all crimes populate all possible datetime values.
+#    * If a crime does not exist, it is not recorded.
+#    * Right joins are necessary in cases where crime counts of 0 are needed.
+# * Which offenses do not have:
+#    * `Date`
+#    * `Beat`
+#    * Full `Block Range`
+#    * `Street Name`
+#    * `Type`
+# * Which `Street Name` have:
+#    * An duplicated `Type` (i.e. 'DAIRY ASHFORD RD`)
+# * Which offenses occur:
+#    * Outside any `Beat`
+#    * Have no location information
+```
+
+```{r uni_data}
+# Need unique (per offense)
+hou_uni <- hou %>% filter(!is.na(sheet))
+```
+
+## OUTRIGHT MISSING VALUES
+
+```{r}
+miss_var_summary(hou_uni)
+```
+
+## THESE BEATS ARE NOT ON THE MAP
+
+```{r, results='hold', warning=FALSE}
+bp_beats  <- bp %>% as_data_frame() %>% count(Beats)
+hou_beats <- hou_uni %>% count(Beat)
+missing_beats <- hou_beats %>% anti_join(bp_beats, by = c("Beat" = "Beats"))
+missing_beats
+summarize(missing_beats, n = sum(n))
+```
+
+## These crimes are missing `Beat` information
+
+```{r, results='hold'}
+beat_filter <- missing_beats %>%
+ pull(Beat)
+
+miss_beats <- hou_uni %>%
+ add_count(`Offense Type`, year = year(Date)) %>%
+ filter(Beat %in% beat_filter) %>%
+ add_count(`Offense Type`, year = year(Date)) %>%
+ distinct(`Offense Type`, year, n, nn) %>%
+ mutate(percent_miss = (nn / n) * 100)
+
+miss_beats
+
+miss_beats %>%
+    ggplot() +
+    geom_col(aes(factor(year), percent_miss)) +
+    facet_wrap(~`Offense Type`)
+```
+
+## Which `Offense Type` have missing `Beat` and `Block Range`
+```{r}
+hou_uni %>%
+ filter(is.na(Beat) &
+         is.na(`Block Range`)) %>%
+ count(`Offense Type`, sheet)
+```
+
+## Same as above, but also have missing `Street Name`
+```{r}
+hou_uni %>%
+ filter(is.na(Beat) &
+         is.na(`Block Range`) &
+         is.na(`Street Name`)) %>%
+ count(`Offense Type`, sheet)
+```
+
+```{r end}
+setwd(old_dir)
+```

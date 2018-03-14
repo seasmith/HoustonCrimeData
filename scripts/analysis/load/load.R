@@ -18,11 +18,8 @@ library(nord)
 # -- Population data: http://www.houstontx.gov/planning/Demographics/docs_pdfs/Cy/hist_pop_1900_2017.pdf
 
 # -- Load
-load("data/hou_orig.RData")
-
-hou_pop <- tibble(year = 2010:2017, pop = seq(2100263, 2319603, length.out = 8))
-harvey <- tibble(start = as.Date("2017-08-25"), end = as.Date("2017-08-28"))
-
+load("data/hou.RData")
+load("data/hou_pop.RData")
 
 #   -----------------------------------------------------------------------
 # MULTI-ALIGN AND -PLOT FUNCTION ------------------------------------------
@@ -96,6 +93,24 @@ multi_plot <- function(plots, base_plot, n = 1, draw_plot = TRUE) {
 # END OF MULTI-ALIGN AND -PLOT FUNCTION -----------------------------------
 #   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+#   -----------------------------------------------------------------------
+# OTHER FUNCTIONS ---------------------------------------------------------
+#   -----------------------------------------------------------------------
+
+index <- function(x) {
+ min_x <- unique(min(x))
+ max_x <- unique(max(x))
+ vapply(X = x,
+        FUN = function(value) (value - min_x) / (max_x - min_x),
+        FUN.VALUE = numeric(1))
+}
+
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# OTHER FUNCTIONS ---------------------------------------------------------
+#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 #   -----------------------------------------------------------------------
 # SETUP THEME -------------------------------------------------------------
 #   -----------------------------------------------------------------------
@@ -130,113 +145,6 @@ theme_dk <- function() {
 #   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-# FILTER AND MUTATE DATA --------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-
-
-#  What am I renaming:
-#    * `# Of Offenses` to `n_offenses`
-hou_orig <- hou_orig %>%
-  rename(n_offenses = `# Of Offenses`)
-
-
-#  What am I getting rid of:
-#    * NA `Date`
-#    * anything before or 2009 to 2017
-#    * `Offense Type` "1" :/
-hou <- hou_orig %>%
-  filter(year(Date) >= 2010 & year(Date) < 2018) %>%
-  filter(`Offense Type` != "1")
-
-#  What I am changing:
-#    * `Hour` values of "24" into "00"...25 hours makes no sense
-#    * Removing anomalous "'" in `Hour`
-#    * Removing anomalous "'" in `Beat`
-#    * Replace 'UNK' with 'NA' in `Beat`
-#    * `Offense Type` to plural to better convey the meaning of
-#         the x- and y-axis
-#    * Extract just the numeric part of `DISTRICT`
-hou <- hou %>%
-  mutate(Hour = if_else(Hour == "24", "00", Hour)) %>%
-  mutate(Hour = str_replace(Hour, "'", "")) %>%
-  mutate(Beat = str_replace(Beat, "'", "")) %>%
-  mutate(Beat = if_else(Beat == "UNK", NA_character_, Beat)) %>%
-  mutate(`Offense Type` = case_when(
-    `Offense Type` == "Aggravated Assault" ~ "Aggravated Assaults",
-    `Offense Type` == "Auto Theft" ~ "Auto Thefts",
-    `Offense Type` == "Burglary" ~ "Burglaries",
-    `Offense Type` == "Murder" ~ "Murders",
-    `Offense Type` == "Rape" ~ "Rapes",
-    `Offense Type` == "Robbery" ~ "Robberies",
-    `Offense Type` == "Theft" ~ "Other Thefts"
-  )) %>%
-  mutate(Date = ymd_h(paste0(Date, "-", Hour))) %>%
-  mutate(DISTRICT = str_extract(Beat, "[[:digit:]]+"),
-         DISTRICT = as.integer(DISTRICT))
-
-
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# END FILTERING AND MUTATING DATA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-# CHECK DATA --------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
-
-#  Is every variable (`Offense Type`)
-#    present in every month of every
-#    year?  They should be
-
-every_var_in_yearmon <- hou %>%
-  distinct(year = year(Date),
-           `Offense Type`,
-           month = month(Date)) %>%
-  add_count(`Offense Type`) %>%
-  filter(n != n_distinct(as.yearmon(hou$Date)))
-
-if (nrow(every_var_in_yearmon) > 0)
-  warning("Some `Offense Type` values not present in certain months.", call. = FALSE)
-
-rm(every_var_in_yearmon)
-
-
-#   -----------------------------------------------------------------------
-# FILL IN MISSING DATETIME (BY HOUR) --------------------------------------
-
-hou <- hou %>%
-  split(.$`Offense Type`) %>%
-  map(~right_join(.x, tibble(Date = seq(min(hou$Date),
-                                        max(hou$Date),
-                                        by = "hours")))) %>%
-  map(~select(.x, -`Offense Type`)) %>%
-  bind_rows(.id = "Offense Type") %>%
-  mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses)) %>%
-  arrange(`Offense Type`) %>%
-  mutate(`Offense Type` = factor(`Offense Type`, sort(unique(`Offense Type`)), ordered = TRUE))
-  
-
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   -----------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   END CHECK DATA --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   -----------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 #   -----------------------------------------------------------------------
 #   -----------------------------------------------------------------------
 #   -----------------------------------------------------------------------
@@ -244,6 +152,16 @@ hou <- hou %>%
 #   -----------------------------------------------------------------------
 #   -----------------------------------------------------------------------
 #   -----------------------------------------------------------------------
+
+hou_pop_summ <- hou_pop %>%
+ select(matches("^UN_201[0-7]+_E")) %>%
+ summarize_all(sum, na.rm = TRUE) %>%
+ gather("year", "pop") %>%
+ mutate(year = str_extract(year, "[0-9]+"),
+        year = as.integer(year))
+
+harvey <- tibble(start = as.Date("2017-08-25"), end = as.Date("2017-08-28"))
+
 
 #  Summary data:
 #    * Group by: crime type and year-month
@@ -257,7 +175,7 @@ hou_monthly <- hou %>%
 
 hou_monthly <- hou_monthly %>%
   mutate(year = year(as.Date(Date))) %>%
-  left_join(hou_pop) %>%
+  left_join(hou_pop_summ) %>%
   mutate(rate = (n_offenses / pop) * 10^5)
 
 #  Get daily data - dates without
@@ -275,7 +193,7 @@ hou_daily_summ <- hou %>%
 
 hou_daily_summ <- hou_daily_summ %>%
   mutate(year = year(Date)) %>%
-  left_join(hou_pop) %>%
+  left_join(hou_pop_summ) %>%
   mutate(rate = (n_offenses / pop) * 10^5)
 
 # Get yearly data

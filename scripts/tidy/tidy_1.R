@@ -1,9 +1,10 @@
 library(tidyverse)
 library(readxl)
 library(tools)
+library(lubridate)
 
 # -- 2009-2016
-dest <- "downloads/hou_crime_data"
+dest <- "data/hou_crime_data"
 
 # Handle expected:1 got: 0 errors from fread()
 all_files <- dest %>%
@@ -97,10 +98,10 @@ hou_orig_2017 <- files_2017 %>%
     read_excel(.x, col_names = nms[-1L], skip = 1L)
   })
 
-names(hou_orig_2017) <- tools::file_path_sans_ext(basename(files_2017))
+names(hou_orig_2017) <- file_path_sans_ext(basename(files_2017))
 
 hou_orig_2017 <- hou_orig_2017 %>%
-  map(~mutate_if(.x, lubridate::is.POSIXct, as.Date)) %>%
+  map(~mutate_if(.x, is.POSIXct, as.Date)) %>%
   map(~mutate_at(.x, vars(Date), as.Date, format = "%m/%d/%Y")) %>%
   bind_rows(.id = "sheet")
 

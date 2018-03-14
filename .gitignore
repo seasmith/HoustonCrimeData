@@ -5,3 +5,5 @@ data/*
 downloads/*
 plots/*
 changes.md
+.Rproj.user
+README.html

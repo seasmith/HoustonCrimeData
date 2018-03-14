@@ -40,12 +40,11 @@ ridges <- hou_daymon %>%
 gb <- ggplot() +
   geom_blank() +
   labs(title = paste0("Houston Crime Distribution", "\n",
-                      "(2010-2017*)"),
+                      "(2010-2017)"),
        subtitle = paste0("  Daily                                   Monthly"),
        x = NULL, y = NULL,
        caption = paste0("Luke Smith (@lksmith)", "\n",
-                        "Source: City of Houston", "\n",
-                        "*Does not include December 2017")) +
+                        "Source: City of Houston")) +
   theme_minimal() +
   theme(text = element_text(family = "Open Sans", size = 16, color = "white"),
         plot.title = element_text(size = 22, color = "white", margin = margin(0,0,0.2,0, "lines")),

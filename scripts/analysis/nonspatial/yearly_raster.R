@@ -97,14 +97,6 @@ file.remove(yearly_rasters)
 
 # NORMALIZED --------------------------------------------------------------
 
-index <- function(x) {
-  min_x <- min(x)
-  max_x <- max(x)
-  vapply(X = x,
-         FUN = function(value) (value - min_x) / (max_x - min_x),
-         FUN.VALUE = numeric(1))
-}
-
 h = 395 / 100
 
 hou_monthly %>%
@@ -130,29 +122,29 @@ hou_monthly %>%
 
 # TEST --------------------------------------------------------------------
 
-assaults <- hou_monthly %>%
-  mutate(mrate = ((n_offenses / pop) * 10^5),
-         norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
-  filter(`Offense Type` == "Aggravated Assaults") %>%
-  ggplot(aes(factor(Date), `Offense Type`)) +
-  geom_tile(aes(fill = norm_mrate, color = norm_mrate)) +
-  scale_fill_viridis_c() +
-  scale_color_viridis_c()
-
-a <- assaults +
-  scale_x_discrete(expand = expand_scale()) +
-  scale_y_discrete(expand = expand_scale()) +
-  guides(fill = guide_colorbar(title = paste0("Aggravated Assaults"),
-                               title.position = "top", direction = "horizontal",
-                               ticks = FALSE, barwidth = 10, raster = FALSE),
-         color = FALSE) +
-  theme_dk() +
-  theme(axis.text = element_blank(),
-        legend.position = "left",
-        plot.margin = unit(c(0,0,0,0), "lines"))
-
-x_line <- a %>%
-  axis_canvas("x") +
-  geom_line(aes(Date, norm_mrate), data = hou_monthly %>%
-              mutate(mrate = ((n_offenses / pop) * 10^5),
-                     norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>% filter(`Offense Type` == "Aggravated Assaults"))
+# assaults <- hou_monthly %>%
+#   mutate(mrate = ((n_offenses / pop) * 10^5),
+#          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
+#   filter(`Offense Type` == "Aggravated Assaults") %>%
+#   ggplot(aes(factor(Date), `Offense Type`)) +
+#   geom_tile(aes(fill = norm_mrate, color = norm_mrate)) +
+#   scale_fill_viridis_c() +
+#   scale_color_viridis_c()
+# 
+# a <- assaults +
+#   scale_x_discrete(expand = expand_scale()) +
+#   scale_y_discrete(expand = expand_scale()) +
+#   guides(fill = guide_colorbar(title = paste0("Aggravated Assaults"),
+#                                title.position = "top", direction = "horizontal",
+#                                ticks = FALSE, barwidth = 10, raster = FALSE),
+#          color = FALSE) +
+#   theme_dk() +
+#   theme(axis.text = element_blank(),
+#         legend.position = "left",
+#         plot.margin = unit(c(0,0,0,0), "lines"))
+# 
+# x_line <- a %>%
+#   axis_canvas("x") +
+#   geom_line(aes(Date, norm_mrate), data = hou_monthly %>%
+#               mutate(mrate = ((n_offenses / pop) * 10^5),
+#                      norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>% filter(`Offense Type` == "Aggravated Assaults"))

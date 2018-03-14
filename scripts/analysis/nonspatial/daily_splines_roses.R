@@ -201,19 +201,19 @@ sliver <- image_blank(sliver_width, image_info(rr[[1]])["height"], bg)
                  location = geometry_point(0,-7),
                  color = clr, font = fnt, size = 40) %>%
   image_annotate("Average number of crimes per",
-                 location = geometry_point(3, 38),
+                 location = geometry_point(3, 45),
                  color = clr, font = fnt, size = 25) %>%
-  image_annotate("day of the week from 2010 to 2017*",
-                 location = geometry_point(3, 67),
-                 color = clr, font = fnt, size = 25) %>%
-  image_annotate("*Does not include December 2017",
-                 location = geometry_point(0, 126),
-                 color = clr, font = fnt, size = 12))
-
+  image_annotate("day of the week from 2010 to 2017",
+                 location = geometry_point(3, 77),
+                 color = clr, font = fnt, size = 25) #%>%
+  # image_annotate("*Does not include December 2017",
+  #                location = geometry_point(0, 126),
+  #                color = clr, font = fnt, size = 12)
+)
 cap_box <- image_blank(image_info(d)$width, 25, bg) %>%
   image_annotate("Luke Smith (@lksmth)",
                  location = geometry_point(748, 6),
-                 color = "gray80", font = fnt, size = 13) %>%
+                 color = "springgreen", font = fnt, size = 13) %>%
   image_annotate("Source: City of Houston",
                  location = geometry_point(2, 6),
                  color = "gray50", font = fnt, size = 13)

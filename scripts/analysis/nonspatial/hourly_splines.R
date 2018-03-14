@@ -38,7 +38,7 @@ splines_hourly <- hou_same_hour %>%
 gb <- ggplot() +
   geom_blank() +
   labs(title = paste0("Houston Crime"),
-       subtitle = paste0("Hourly Crime Averages (2010-2017*)"),
+       subtitle = paste0("Hourly Crime Averages (2010-2017)"),
        x = NULL, y = NULL,
        caption = paste0("Luke Smith (@lksmith)", "\n", "Source: City of Houston")) +
        # caption = paste0("*Excludes December 2017", "\n",)) +

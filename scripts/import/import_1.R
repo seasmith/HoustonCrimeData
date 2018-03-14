@@ -1,8 +1,7 @@
 library(tidyverse)
-library(readxl)
 library(stringr)
 library(rvest)
-library(zoo)
+# library(zoo)
 library(curl)
 
 # -- Beat map: http://www.houstontx.gov/police/pdfs/hpd_beat_map.pdf

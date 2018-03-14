@@ -29,12 +29,19 @@ url <- "https://opendata.arcgis.com/datasets/fb3bb02ec56c4bb4b9d0cf3b8b3e5545_4.
 dz(url, "Houston_Police_Beats.zip")
 
 
-
 # MAJOR ROADS -------------------------------------------------------------
 # -- Major Roads: https://storage-ec2-917.sharefile.com/download.ashx?dt=dt7c266ce2464548b5977d3f33f5e05094&h=6VfbVAN%2b4g%2bvk8CV9blRRXqtmpfX7PK2qCKYvtXJMp4%3d
 
 url <- "https://storage-ec2-917.sharefile.com/download.ashx?dt=dt7c266ce2464548b5977d3f33f5e05094&h=6VfbVAN%2b4g%2bvk8CV9blRRXqtmpfX7PK2qCKYvtXJMp4%3d"
 dz(url, "Major_Roads.zip")
+
+
+# OSM DATA ----------------------------------------------------------------
+# -- OSM Extracts:
+# Texas only
+
+url <- "http://download.geofabrik.de/north-america/us/texas-latest-free.shp.zip"
+dz(url, "Texas_OSM.zip")
 
 
 # SCHOOLS -----------------------------------------------------------------
@@ -44,6 +51,13 @@ dz(url, "Major_Roads.zip")
 url <- "https://opendata.arcgis.com/datasets/59d52cd8fa9d463ea7cf9f3c0a0c6ea2_0.zip"
 dz(url, "Houston_Schools.zip")
 
+
+
+# SCHOOL DISTRICTS --------------------------------------------------------
+# -- School Districts: http://cohgis-mycity.opendata.arcgis.com/datasets/school-districts
+
+url <- "https://opendata.arcgis.com/datasets/59d52cd8fa9d463ea7cf9f3c0a0c6ea2_1.zip"
+dz(url, "School_Districts.zip")
 
 
 # POLICE STATIONS ---------------------------------------------------------
@@ -61,6 +75,11 @@ url <- "https://s3.amazonaws.com/data.openaddresses.io/openaddr-collected-us_sou
 dz(url, "US_South_Addresses.zip")
 
 
+# ZIP CODES ---------------------------------------------------------------
+# -- Zip Codes: http://cohgis-mycity.opendata.arcgis.com/datasets/zip-codes?geometry=-96.663%2C29.509%2C-94.048%2C29.927
+
+url <- "https://opendata.arcgis.com/datasets/7237db114eeb416cb481f4450d8a0fa6_7.zip"
+dz(url, "Zip_Codes.zip")
 
 # NASA SEDAC --------------------------------------------------------------
 # -- NASA SEDAC GPWv4: http://sedac.ciesin.columbia.edu/data/collection/gpw-v4

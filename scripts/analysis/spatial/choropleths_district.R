@@ -1,8 +1,9 @@
 library(sf)
 
-#   -----------------------------------------------------------------------
+
+
 # POLICE DISTRICTS --------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 
 d_file <- "data/Houston_Police_Districts/Houston_Police_Districts.gdb"
 hpd <- st_read(d_file)
@@ -21,26 +22,18 @@ hpd_monthly <- hpd_monthly %>%
   mutate(rate = (n_offenses / pop) * 10^5)
 
 
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# POLICE DISTRICTS --------------------------------------------------------
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#   -----------------------------------------------------------------------
 # MAJOR ROADS -------------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 
 r_file <- "data/Major_Roads/Major_Roads.gdb"
-roads <- st_read(r_file)
-roads <- st_transform(roads, crs = st_crs(4269))
+roads  <- st_read(r_file)
+roads  <- st_transform(roads, crs = st_crs(4269))
 
 
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# MAJOR ROADS -------------------------------------------------------------
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#   -----------------------------------------------------------------------
 # DAILY -------------------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 
 hpd_daily <- hou %>%
   group_by(Date = as.Date(Date),
@@ -50,13 +43,9 @@ hpd_daily <- hou %>%
   ungroup()
 
 
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# DAILY -------------------------------------------------------------------
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#   -----------------------------------------------------------------------
 # YEARLY ------------------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 
 hpd_yearly <- hpd_daily %>%
   group_by(year = year(Date),
@@ -149,8 +138,8 @@ choro_2016 %>%
 
 
 
-
 # BEATS -------------------------------------------------------------------
+
 
 bp <- st_read("data/Houston_Police_Beats/Houston_Police_Beats.shp")
 sch <- st_read("data/Houston_Schools/Schools.shp")
@@ -184,7 +173,7 @@ choro_beat_2016 <- hpd_yearly %>%
       coord_sf(xlim = st_bbox(hpd)[c(1, 3)], ylim = st_bbox(hpd)[c(2, 4)], datum = NA) +
       guides(fill = guide_colorbar(raster = FALSE, ticks = FALSE,
                                    barheight = 0.05, barwidth = 0.48,
-                                   title.vjust = 1, title.position = "left",
+                                   title.vjust  = 1, title.position = "left",
                                    default.unit = "npc"),
              color = FALSE) +
       labs(title = paste0(this_level, "\n")) +
@@ -193,7 +182,7 @@ choro_beat_2016 <- hpd_yearly %>%
             legend.direction = "horizontal",
             legend.text = element_text(margin = margin(0.1, 0, 0, 0, "lines")),
             legend.position = "top",
-            legend.margin = margin(0, 0, -3, 0, "lines"),
+            legend.margin   = margin(0, 0, -3, 0, "lines"),
             legend.justification = "left")
     
     

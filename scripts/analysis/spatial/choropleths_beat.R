@@ -53,36 +53,36 @@ beat_join <- expand.grid(Beat = unique(hpb_yearly$Beat),
   as_tibble()
 
 pop_long <- hou_pop %>%
- gather(... = matches("^UN_20[0-9]+_E$")) %>%
- select(Beats, key, value) %>%
- rename(year = key, pop = value) %>%
- mutate(year = str_extract(year, "[0-9]+"),
-        year = as.integer(year))
+  gather(... = matches("^UN_20[0-9]+_E$")) %>%
+  select(Beats, key, value) %>%
+  rename(year = key, pop = value) %>%
+  mutate(year = str_extract(year, "[0-9]+"),
+         year = as.integer(year))
 
 den_long <- hou_pop %>%
- gather(... = matches("^UN_20[0-9]+_DS$")) %>%
- select(Beats, key, value) %>%
- rename(year = key, den = value) %>%
- mutate(year = str_extract(year, "[0-9]+"),
-        year = as.integer(year))
+  gather(... = matches("^UN_20[0-9]+_DS$")) %>%
+  select(Beats, key, value) %>%
+  rename(year = key, den = value) %>%
+  mutate(year = str_extract(year, "[0-9]+"),
+         year = as.integer(year))
 
 hou_pop_long <- pop_long %>%
- inner_join(den_long, by = c("Beats", "year"))
+  inner_join(den_long, by = c("Beats", "year"))
 
 unknowns <- hpb_yearly %>%
- anti_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
- count(Beat)
+  anti_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
+  count(Beat)
 
 hpb_yearly <- hpb_yearly %>%
- right_join(beat_join) %>%
- left_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
- mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses),
-        prop_off = if_else(is.na(prop_off), 0, prop_off)) %>%
- group_by(year) %>%
- mutate(rate = (n_offenses / pop) * 10^5) %>%
- ungroup() %>%
- left_join(select(bp, Beats, geometry), by = c("Beat" = "Beats")) %>%
- st_sf()
+  right_join(beat_join) %>%
+  left_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
+  mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses),
+         prop_off = if_else(is.na(prop_off), 0, prop_off)) %>%
+  group_by(year) %>%
+  mutate(rate = (n_offenses / pop) * 10^5) %>%
+  ungroup() %>%
+  left_join(select(bp, Beats, geometry), by = c("Beat" = "Beats")) %>%
+  st_sf()
 
 
 #   -----------------------------------------------------------------------
@@ -183,34 +183,14 @@ hpb_yearly %>%
 # EXPERIMENTAL ------------------------------------------------------------
 
 
-# population --------------------------------------------------------------
-
-
-# Population per police beat
-
-# hpb_ds %>%
-#   ggplot() +
-#   geom_sf(aes(fill = beat_pop)) +
-#   geom_sf(data = roads, color = "#f5deb377", size = 0.6) +
-#   scale_fill_viridis_c(breaks = pretty_breaks(3)) +
-#   coord_sf(xlim = st_bbox(hpb_yearly)[c(1, 3)],
-#            ylim = st_bbox(hpb_yearly)[c(2, 4)],
-#            datum = NA) +
-#   guides(fill = guide_colorbar(title.position = "top", title = "Beat Population")) +
-#   theme_dk() +
-#   theme(legend.position = c(0.2, 0.9),
-#         legend.direction = "horizontal")
-
-
-
 # mapbox ------------------------------------------------------------------
 
 # choro_data_json <- geojsonio::geojson_write(choro_data %>% filter(year == 2017), file = "violence/houston/data/choro.json")
 o_type <- "Aggravated Assaults"
 
 choro_data <- hpb_yearly %>%
- filter(`Offense Type` == o_type) %>%
- mutate(rate = if_else(Beat %in% c(rm_beats(100), rm_hobby), NA_real_, rate))
+  filter(`Offense Type` == o_type) %>%
+  mutate(rate = if_else(Beat %in% c(rm_beats(100), rm_hobby), NA_real_, rate))
 
 leafdata <- choro_data %>% filter(year == 2017)
 
@@ -229,21 +209,23 @@ labels <- sprintf(paste0("Police Beat: %s<br/>Offense Rate: %s<br/>",
   lapply(htmltools::HTML)
 
 (m <- leaflet(leafdata) %>%
-  setView(-95.35, 29.8, 10) %>%
-  # addProviderTiles("MapBox", options = providerTileOptions(
-  #   id = "mapbox.dark", accessToken = getOption("mapbox_access_token")
-  # ))
-  addProviderTiles(providers$Esri) %>%
-  addPolygons(stroke = TRUE, weight = 1, color = "gray10",
-              fillOpacity = 0.5, fillColor = ~pal(rate),
-              highlightOptions = highlightOptions(
-                weight = 1.4, fillOpacity = 0.8, bringToFront = TRUE),
-              label = labels,
-              labelOptions = labelOptions(
-                style = list("font-weight" = "normal", padding = "3px 8px"),
-                textsize = "15px",
-                direction = "auto"
-              )))
+    setView(-95.35, 29.8, 10) %>%
+    # addProviderTiles("MapBox", options = providerTileOptions(
+    #   id = "mapbox.dark", accessToken = getOption("mapbox_access_token")
+    # ))
+    addProviderTiles(providers$Esri) %>%
+    addPolygons(stroke = TRUE, weight = 1, color = "gray10",
+                fillOpacity = 0.5, fillColor = ~pal(rate),
+                highlightOptions = highlightOptions(
+                  weight = 1.4, fillOpacity = 0.8, bringToFront = TRUE),
+                label = labels,
+                labelOptions = labelOptions(
+                  style = list("font-weight" = "normal", padding = "3px 8px"),
+                  textsize = "15px",
+                  direction = "auto"
+                )) %>%
+    addLegend(position = "bottomright", pal = pal, values = ~rate)
+)
 
 # google maps -------------------------------------------------------------
 

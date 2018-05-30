@@ -1,0 +1,29 @@
+---
+title: "Connecting to and querying data in PostgreSQL"
+---
+
+```{r setup}
+library(odbc)
+library(DBI)
+library(dbplyr)
+library(dplyr)
+```
+
+```{r connect}
+con <- dbConnect(odbc::odbc(),
+                 driver = "PostgreSQL ODBC Driver(ANSI)",
+                 database = "HoustonCrimeData",
+                 uid = "postgres",
+                 pwd = getOption("psql_pwd"),
+                 host = "localhost",
+                 port = 5432)
+```
+
+```{sql con}
+SELECT c.year, COUNT(*) as "n"
+FROM(
+    SELECT EXTRACT(YEAR FROM "Date") as "year"
+	FROM "Crimes"
+) as c
+GROUP BY c.year
+```

@@ -1,9 +1,10 @@
 library(sf)
 library(tidyverse)
+library(units)
 
 # Use Houston Police beats for get necessary population points
 hp_beats <- st_read("data/Houston_Police_Beats/Houston_Police_Beats.shp")
-
+hp_beats <- mutate(hp_beats, Area_sq_mi = set_units(Area_sq_mi, ud_units$mi^2))
 # There are a lot of points (500k+) in the population data.
 ref <- "data/GPW_TX"
 is_east_shp <- grepl("_east$", st_layers(ref)[["name"]])
@@ -15,7 +16,7 @@ etx <- st_layers(ref)[["name"]][is_east_shp] %>%
 hou_pop <- hp_beats %>%
  st_join(etx, left = FALSE)
 
-gaps <- function(y1, y2, var1, var2) {
+fill_gaps <- function(y1, y2, var1, var2) {
  var1 <- enquo(var1)
  var2 <- enquo(var2)
  
@@ -36,8 +37,8 @@ gaps <- function(y1, y2, var1, var2) {
 }
 
 hou_pop <- hou_pop %>%
- mutate(!!!gaps(2010, 2015, UN_2005_E, UN_2010_E),
-        !!!gaps(2015, 2020, UN_2010_E, UN_2015_E))
+ mutate(!!!fill_gaps(2010, 2015, UN_2005_E, UN_2010_E),
+        !!!fill_gaps(2015, 2020, UN_2010_E, UN_2015_E))
 
 
 hou_pop <- hou_pop %>%
@@ -59,9 +60,7 @@ hou_pop <- hou_pop %>%
  left_join(hou_pop,., by = "Beats")
 
 save(hou_pop, file = "data/hou_pop.RData")
-# save(hpb_ds, file = "data/hpb_ds.RData")
 
 rm(etx)
-rm(hpb_uni)
 rm(hp_beats)
 rm(hou_pop)

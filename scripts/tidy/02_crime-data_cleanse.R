@@ -5,8 +5,9 @@ library(lubridate)
 library(zoo)
 load("data/hou_orig.RData")
 
-#   -----------------------------------------------------------------------
+
 # FILTER AND MUTATE DATA --------------------------------------------------
+
 
 # What am I renaming:
 #   * `# Of Offenses` to `n_offenses`
@@ -44,25 +45,20 @@ hou <- hou %>%
  mutate(`Offense Type` = case_when(
   `Offense Type` == "Aggravated Assault" ~ "Aggravated Assaults",
   `Offense Type` == "Auto Theft" ~ "Auto Thefts",
-  `Offense Type` == "Burglary" ~ "Burglaries",
-  `Offense Type` == "Murder" ~ "Murders",
-  `Offense Type` == "Rape" ~ "Rapes",
-  `Offense Type` == "Robbery" ~ "Robberies",
-  `Offense Type` == "Theft" ~ "Other Thefts"
+  `Offense Type` == "Burglary"   ~ "Burglaries",
+  `Offense Type` == "Murder"     ~ "Murders",
+  `Offense Type` == "Rape"       ~ "Rapes",
+  `Offense Type` == "Robbery"    ~ "Robberies",
+  `Offense Type` == "Theft"      ~ "Other Thefts"
  )) %>%
  mutate(Date = ymd_h(paste0(Date, "-", Hour))) %>%
  mutate(DISTRICT = str_extract(Beat, "[[:digit:]]+"),
         DISTRICT = as.integer(DISTRICT))
 
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# END FILTERING AND MUTATING DATA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 # CHECK DATA --------------------------------------------------------------
-#   -----------------------------------------------------------------------
-#   -----------------------------------------------------------------------
+
 
 #  Is every variable (`Offense Type`)
 #    present in every month of every
@@ -81,9 +77,13 @@ if (nrow(every_var_in_yearmon) > 0)
 rm(every_var_in_yearmon)
 
 
-#   -----------------------------------------------------------------------
+
 # FILL IN MISSING DATETIME (BY HOUR) --------------------------------------
-#   -----------------------------------------------------------------------
+
+
+# Should `Beat` information be included?
+# If not, then 'holes' will appear in plots
+# such as the `week_day ~ hour` tile plot.
 
 hou <- hou %>%
  split(.$`Offense Type`) %>%
@@ -96,11 +96,6 @@ hou <- hou %>%
  arrange(`Offense Type`) %>%
  mutate(`Offense Type` = factor(`Offense Type`, sort(unique(`Offense Type`)), ordered = TRUE))
 
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   -----------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   END CHECK DATA --!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   -----------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 # SAVE IT -----------------------------------------------------------------

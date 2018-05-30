@@ -2,14 +2,14 @@ library(tidyverse)
 library(scales)
 library(ggridges)
 library(zoo)
-library(extrafont)
-  loadfonts("win", quiet = TRUE)
+library(extrafont); loadfonts("win", quiet = TRUE)
 library(grid)
 library(gridExtra)
 library(lubridate)
 library(ggalt)
 library(magick)
 library(nord)
+
 
 # -- Beat map: http://www.houstontx.gov/police/pdfs/hpd_beat_map.pdf
 # -- Substations: http://www.houstontx.gov/police/contact/substations.htm
@@ -25,7 +25,7 @@ load("data/hou_pop.RData")
 # MULTI-ALIGN AND -PLOT FUNCTION ------------------------------------------
 #   -----------------------------------------------------------------------
 
-odd <- function(x) x %% 2 == 1
+odd  <- function(x) x %% 2 == 1
 even <- function(x) x %% 2 == 0
 
 image_shuffle <- function(x) {
@@ -48,8 +48,7 @@ multi_plot <- function(plots, base_plot, n = 1, draw_plot = TRUE) {
   
   # Grobify
   # print(base_plot)
-  base_grob <- ggplotGrob(base_plot)
-  
+  base_grob  <- ggplotGrob(base_plot)
   many_grobs <- map(plots, ggplotGrob)
   
   # Get and set widths
@@ -64,7 +63,7 @@ multi_plot <- function(plots, base_plot, n = 1, draw_plot = TRUE) {
   
   # Get and set heights
   many_heights <- map(many_grobs, ~.x$heights[2:5])
-  minHeights <- pmap(many_heights, unit.pmin)
+  minHeights   <- pmap(many_heights, unit.pmin)
   class(minHeights) <- c("unit.list", "unit")
   
   many_grobs <- map(many_grobs, ~{
@@ -99,11 +98,11 @@ multi_plot <- function(plots, base_plot, n = 1, draw_plot = TRUE) {
 #   -----------------------------------------------------------------------
 
 index <- function(x) {
- min_x <- unique(min(x))
- max_x <- unique(max(x))
- vapply(X = x,
-        FUN = function(value) (value - min_x) / (max_x - min_x),
-        FUN.VALUE = numeric(1))
+  min_x <- unique(min(x))
+  max_x <- unique(max(x))
+  vapply(X = x,
+         FUN = function(value) (value - min_x) / (max_x - min_x),
+         FUN.VALUE = numeric(1))
 }
 
 #   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -118,7 +117,7 @@ index <- function(x) {
 bg <- "gray10"
 repick_colors <- c(4,5,6,1,7,2,3)
 n <- 20
-picked_colors <- viridis::viridis(7*n, begin = 0.4, end = 1)[seq.int(1, 7*n, n)][repick_colors]
+picked_colors <- viridisLite::viridis(7*n, begin = 0.4, end = 1)[seq.int(1, 7*n, n)][repick_colors]
 
 fnt <- "Open Sans"
 clr <- "white"
@@ -128,7 +127,7 @@ theme_dk <- function() {
     theme(text = element_text(color = "white", family = "Open Sans"),
           plot.background = element_rect(fill = "gray10", color = "gray10"),
           plot.margin = unit(c(0, 0, 0.2, 0.2), "lines"),
-          plot.title = element_text(color = "gray90", size = 14, hjust = 0,
+          plot.title  = element_text(color = "gray90", size = 14, hjust = 0,
                                     margin = margin(0.5, 0, -0.8, -0.1, "lines")),
           plot.caption = element_text(color = "gray60", size = 8),
           panel.grid.major = element_line(color = "gray50"),
@@ -136,7 +135,7 @@ theme_dk <- function() {
           axis.text = element_text(color = "gray90", size = 10),
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
-          strip.text = element_text(color = "white", 10),
+          strip.text  = element_text(color = "white", 10),
           panel.ontop = FALSE)}
 
 
@@ -154,11 +153,11 @@ theme_dk <- function() {
 #   -----------------------------------------------------------------------
 
 hou_pop_summ <- hou_pop %>%
- select(matches("^UN_201[0-7]+_E")) %>%
- summarize_all(sum, na.rm = TRUE) %>%
- gather("year", "pop") %>%
- mutate(year = str_extract(year, "[0-9]+"),
-        year = as.integer(year))
+  select(matches("^UN_201[0-7]+_E")) %>%
+  summarize_all(sum, na.rm = TRUE) %>%
+  gather("year", "pop") %>%
+  mutate(year = str_extract(year, "[0-9]+"),
+         year = as.integer(year))
 
 harvey <- tibble(start = as.Date("2017-08-25"), end = as.Date("2017-08-28"))
 
@@ -175,7 +174,7 @@ hou_monthly <- hou %>%
 
 hou_monthly <- hou_monthly %>%
   mutate(year = year(as.Date(Date))) %>%
-  left_join(hou_pop_summ) %>%
+  left_join(hou_pop_summ, by = "year") %>%
   mutate(rate = (n_offenses / pop) * 10^5)
 
 #  Get daily data - dates without
@@ -193,7 +192,7 @@ hou_daily_summ <- hou %>%
 
 hou_daily_summ <- hou_daily_summ %>%
   mutate(year = year(Date)) %>%
-  left_join(hou_pop_summ) %>%
+  left_join(hou_pop_summ, by = "year") %>%
   mutate(rate = (n_offenses / pop) * 10^5)
 
 # Get yearly data

@@ -88,7 +88,9 @@ hpb_yearly_summed <- hpb_yearly %>%
             rate       = sum((n_offenses / pop) * 10^5, na.rm = TRUE)
   ) %>%
   ungroup() %>%
-  mutate(Beat = "Houston")
+  mutate(Beat = "Houston") %>%
+  st_set_geometry(NULL) %>%
+  setDT()
 
 save(hpb_yearly_summed, file = "data/hpb_yearly_summed.RData")
 

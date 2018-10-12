@@ -4,6 +4,9 @@ output:
     toc: no
 ---
 
+## Items of Interest
+* [HPD Premise Codes](https://www.houstontx.gov/police/cs/beatpages/premise.htm)
+
 ## Similar Projects
 * [Analyzing When and Where San Francisco Criminal Arrests Occur Using R and ggplot2](https://github.com/minimaxir/sf-arrests-when-where/blob/master/crime_data_sf.ipynb)
 

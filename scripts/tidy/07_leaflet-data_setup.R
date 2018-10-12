@@ -4,6 +4,7 @@ library(tidyr)
 library(stringr)
 library(sf)
 library(units)
+library(data.table)
 
 load("data/hou.RData")
 load("data/hou_pop.RData")

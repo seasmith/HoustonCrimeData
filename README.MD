@@ -14,6 +14,7 @@ output:
 ## Other Data Sources
 These are potential data sources.
 
+* [Washington Post Homicide Tracker](https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv)
 * [AskTED](http://tea4avholly.tea.state.tx.us/tea.askted.web/Forms/Home.aspx)
     * __School districts can be downloaded [here](http://schoolsdata2-tea-texas.opendata.arcgis.com/datasets/e115fed14c0f4ca5b942dc3323626b1c_0)__
     * [Current schools](http://schoolsdata2-tea-texas.opendata.arcgis.com/datasets/059432fd0dcb4a208974c235e837c94f_0) offers point location of every regular, charter, and alternative school in Texas. EXCLUDES displinary, juvenile, and WIndham school districts and institutions

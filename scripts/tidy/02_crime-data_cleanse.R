@@ -1,78 +1,55 @@
-library(purrr)
-library(dplyr)
-library(stringr)
 library(lubridate)
-library(zoo)
-load("data/hou_orig.RData")
+library(tidyverse)
+load("data/crime_data_raw.RData")
+
+END_MONTH <- as.Date("2020-09-01")
+
+crime_data <- crime_data_raw %>%
+  filter(between(year(occurrence_date), 2010, 2020)) %>%
+  filter(offense_type != "1") %>%
+  mutate(occurrence_hour = occurrence_hour %>%
+           parse_number() %>%
+           str_pad(2, "left", "0")) %>%
+  mutate(occurrence_hour = if_else(occurrence_hour == "24", "00", occurrence_hour))
+
+crime_data <- crime_data %>%
+ mutate(beat = str_replace(beat, "'", "")) %>%
+ mutate(beat = if_else(beat == "UNK", NA_character_, beat)) %>%
+ mutate(type = if_else(type == "-", NA_character_, type)) %>%
+ mutate(block_range = if_else(block_range == "UNK", NA_character_, block_range)) %>%
+ mutate(district = str_extract(beat, "[[:digit:]]+"),
+        district = as.integer(district))
+
+crime_data <- crime_data %>%
+  separate("block_range", c("block_start", "block_end"), "-", fill = "right") %>%
+  mutate(block_start = if_else(block_start == "UNK", NA_character_, block_start)) %>%
+  mutate(block_start = as.integer(block_start),
+         block_end = as.integer(block_end)) %>%
+  mutate(block_end = if_else(is.na(block_end), block_start, block_end))
 
 
-# FILTER AND MUTATE DATA --------------------------------------------------
+# FILTER ------------------------------------------------------------------
 
-
-# What am I renaming:
-#   * `# Of Offenses` to `n_offenses`
-hou_orig <- hou_orig %>%
- rename(n_offenses = `# Of Offenses`)
-
-#  What am I getting rid of:
-#    * NA `Date`
-#    * anything before or 2009 to 2017
-#    * `Offense Type` "1" :/
-hou <- hou_orig %>%
- filter(year(Date) >= 2010 & year(Date) < 2018) %>%
- filter(`Offense Type` != "1")
-
-#  What I am changing:
-#    * `Hour` values of "24" into "00"...25 hours makes no sense
-#    * Removing anomalous "'" in `Hour`
-#    * Removing anomalous "'" in `Beat`
-#    * Replace 'UNK' with 'NA' in `Beat`
-#    * `Offense Type` to plural to better convey the meaning of
-#         the x- and y-axis
-#    * Extract just the numeric part of `DISTRICT`
-#    * Convert to NA:
-#        * Beat == "UNK"
-#        * Type == "-"
-#        * `Block Range` == "UNK"
-
-hou <- hou %>%
- mutate(Hour = if_else(Hour == "24", "00", Hour)) %>%
- mutate(Hour = str_replace(Hour, "'", "")) %>%
- mutate(Beat = str_replace(Beat, "'", "")) %>%
- mutate(Beat = if_else(Beat == "UNK", NA_character_, Beat)) %>%
- mutate(Type = if_else(Type == "-", NA_character_, Type)) %>%
- mutate(`Block Range` = if_else(`Block Range` == "UNK", NA_character_, `Block Range`)) %>%
- mutate(`Offense Type` = case_when(
-  `Offense Type` == "Aggravated Assault" ~ "Aggravated Assaults",
-  `Offense Type` == "Auto Theft" ~ "Auto Thefts",
-  `Offense Type` == "Burglary"   ~ "Burglaries",
-  `Offense Type` == "Murder"     ~ "Murders",
-  `Offense Type` == "Rape"       ~ "Rapes",
-  `Offense Type` == "Robbery"    ~ "Robberies",
-  `Offense Type` == "Theft"      ~ "Other Thefts"
- )) %>%
- mutate(Date = ymd_h(paste0(Date, "-", Hour))) %>%
- mutate(DISTRICT = str_extract(Beat, "[[:digit:]]+"),
-        DISTRICT = as.integer(DISTRICT))
-
+crime_data <- crime_data %>%
+  filter(floor_date(occurrence_date) <= END_MONTH)
 
 
 # CHECK DATA --------------------------------------------------------------
 
 
-#  Is every variable (`Offense Type`)
+#  Is every variable (offense_type)
 #    present in every month of every
 #    year?  They should be
 
-every_var_in_yearmon <- hou %>%
- distinct(year = year(Date),
-          `Offense Type`,
-          month = month(Date)) %>%
- add_count(`Offense Type`) %>%
- filter(n != n_distinct(as.yearmon(hou$Date)))
+every_var_in_yearmon <- crime_data %>%
+  distinct(year = year(occurrence_date),
+           offense_type,
+           month = month(occurrence_date)) %>%
+  add_count(offense_type) %>%
+  filter(n != n_distinct(floor_date(crime_data$occurrence_date, "month")))
 
 if (nrow(every_var_in_yearmon) > 0)
- warning("Some `Offense Type` values not present in certain months.", call. = FALSE)
+  warning("Some offense_type values not present in certain months.", call. = FALSE)
 
 rm(every_var_in_yearmon)
 
@@ -85,19 +62,9 @@ rm(every_var_in_yearmon)
 # If not, then 'holes' will appear in plots
 # such as the `week_day ~ hour` tile plot.
 
-hou <- hou %>%
- split(.$`Offense Type`) %>%
- map(~right_join(.x, tibble(Date = seq(min(hou$Date),
-                                       max(hou$Date),
-                                       by = "hours")))) %>%
- map(~select(.x, -`Offense Type`)) %>%
- bind_rows(.id = "Offense Type") %>%
- mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses)) %>%
- arrange(`Offense Type`) %>%
- mutate(`Offense Type` = factor(`Offense Type`, sort(unique(`Offense Type`)), ordered = TRUE))
-
+crime_data <- complete(crime_data, offense_type, occurrence_date, occurrence_hour)
 
 
 # SAVE IT -----------------------------------------------------------------
 
-save(hou, file = "data/hou.RData")
+save(hou, file = "data/crime_data.RData")

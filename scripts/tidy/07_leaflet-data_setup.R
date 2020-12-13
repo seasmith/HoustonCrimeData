@@ -38,14 +38,14 @@ beat_join <- expand.grid(Beat = unique(hpb_yearly$Beat),
   as_tibble()
 
 pop_long <- hou_pop %>%
-  gather(... = matches("^UN_20[0-9]+_E$")) %>%
+  pivot_longer(cols = matches("^UN_20[0-9]+_E$"), names_to = "key", values_to = "value") %>%
   select(Beats, key, value) %>%
   rename(year = key, pop = value) %>%
   mutate(year = str_extract(year, "[0-9]+"),
          year = as.integer(year))
 
 den_long <- hou_pop %>%
-  gather(... = matches("^UN_20[0-9]+_DS$")) %>%
+  pivot_longer(cols = matches("^UN_20[0-9]+_DS$"), names_to = "key", values_to = "value") %>%
   select(Beats, key, value) %>%
   rename(year = key, den = value) %>%
   mutate(year = str_extract(year, "[0-9]+"),
@@ -62,7 +62,7 @@ unknowns <- hpb_yearly %>%
 # INDIVIDUAL BEAT SUMMARIES -----------------------------------------------
 
 hpb_yearly <- hpb_yearly %>%
-  right_join(beat_join) %>%
+  right_join(beat_join, by = c("year", "Offense Type", "Beat")) %>%
   left_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
   mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses),
          prop_off = if_else(is.na(prop_off), 0, prop_off)) %>%
@@ -79,7 +79,7 @@ save(hpb_yearly, file = "data/hpb_yearly.RData")
 
 hpb_yearly_summed <- hpb_yearly %>%
   mutate(area = st_area(geometry),
-         area = as_units(area, ud_units$mi^2)) %>%
+         area = set_units(area, mi^2)) %>%
   group_by(year, `Offense Type`) %>%
   summarize(n_offenses = sum(n_offenses, na.rm = TRUE),
             pop        = sum(pop, na.rm = TRUE),
@@ -102,7 +102,7 @@ hpb_hourly <- hou %>%
   summarize(n_offenses = sum(n_offenses, na.rm = TRUE)) %>%
   ungroup() %>%
   mutate(year = year(Date),
-         week_day = wday(Date, label = TRUE, week_start = 1))
+         week_day = lubridate::wday(Date, label = TRUE, week_start = 1))
 
 save(hpb_hourly, file = "data/hpb_hourly.RData")
 
@@ -112,7 +112,8 @@ missing_weekdays <- expand.grid(Beat = unique(hpb_hourly$Beat),
                                 `Offense Type` = unique(hpb_hourly$`Offense Type`),
                                 year = 2010:2017, hour = seq(0, 23),
                                 week_day = levels(hpb_hourly$week_day)) %>%
-  as_tibble()
+  as_tibble() %>%
+  mutate(week_day = factor(week_day, levels = levels(hpb_hourly_summed$week_day), ordered = TRUE))
 
 hpb_hourly_summed <- hpb_hourly %>%
   group_by(Beat, `Offense Type`, year, hour, week_day) %>%

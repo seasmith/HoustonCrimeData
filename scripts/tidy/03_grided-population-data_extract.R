@@ -4,7 +4,7 @@ library(units)
 
 # Use Houston Police beats for get necessary population points
 hp_beats <- st_read("data/Houston_Police_Beats/Houston_Police_Beats.shp")
-hp_beats <- mutate(hp_beats, Area_sq_mi = set_units(Area_sq_mi, ud_units$mi^2))
+hp_beats <- mutate(hp_beats, Area_sq_mi = set_units(Area_sq_mi, mi^2))
 # There are a lot of points (500k+) in the population data.
 ref <- "data/GPW_TX"
 is_east_shp <- grepl("_east$", st_layers(ref)[["name"]])
@@ -42,16 +42,16 @@ hou_pop <- hou_pop %>%
 
 
 hou_pop <- hou_pop %>%
- as_data_frame() %>%
+ as_tibble() %>%  # previously as_data_frame()
  select(-geometry) %>%
  group_by(Beats) %>%
  summarize_at(vars(matches("^UN_20[0-9]+_E$")), sum, na.rm = TRUE)
 
 hou_pop <- hou_pop %>%
- inner_join(select(as_data_frame(hp_beats), Beats, Area_sq_mi))
+ inner_join(select(as_data_frame(hp_beats), Beats, Area_sq_mi), by = "Beats")
 
 hou_pop <- hou_pop %>%
- gather(... = -c(Beats, Area_sq_mi)) %>%
+ pivot_longer(cols = -c(Beats, Area_sq_mi), names_to = "key", values_to = "value") %>%
  mutate(pop_den = value / Area_sq_mi) %>%
  mutate(key = str_replace(key, "_E$", "_DS")) %>%
  select(-value) %>%

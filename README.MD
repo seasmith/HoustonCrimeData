@@ -4,6 +4,28 @@ output:
     toc: no
 ---
 
+## Run Order
+Run order for files in `scripts`
+
+### Mandatory
+
+* `import/01_historical-ucr-data.R` -- downloads the historical UCR data (2009-May 2018) as well as the remaining 2018 data that uses the NIBRS method.
+* `import/02_current-nibrs-data.R` -- downloads NIBRS data (2019-present); requires manually validation and updating
+* `import/03_non-crime-data.R` -- downloads police beats and districts (map), major roads, and a few other items
+* `tidy/01_crime-data_combine.R` -- read all crime data files into single table
+* `tidy/02_crime-data_cleanse.R` -- resolve anomalies within data (categories, etc)
+* `tidy/03_grided-population-data_extract.R` -- use grided population data to estimate police beat population
+* `tidy/07_leaflet-data_setup.R` -- produce datasets to feed directly into leaflet (in the app). You will need to mainly copy and paste the new datasets into the HoustonCrimeViewer `/data/` folder.
+
+### Optional
+
+* `import/0x_311-data.R` -- 311 call data (big)
+* `import/0x_wapo-data.R` -- Washington Post homicide data
+
+### Incomplete
+
+* `import/db/*` -- load data into PostgreSQL
+
 ## Items of Interest
 * [HPD Premise Codes](https://www.houstontx.gov/police/cs/beatpages/premise.htm)
 

@@ -82,6 +82,20 @@ url <- "https://opendata.arcgis.com/datasets/7237db114eeb416cb481f4450d8a0fa6_7.
 dz(url, "Zip_Codes.zip")
 
 # NASA SEDAC --------------------------------------------------------------
+# This was used for the initial (and current grid).
+# However, NASA produces a US census grid.
+# But the data pertains to the 2010 census.
+# There is no updated version.
+# https://sedac.ciesin.columbia.edu/data/collection/usgrid
+#
+# There is a further interagency project for population grids.
+# There are recent (2020-2021) population grids but I have
+# not investigated further.
+# https://www.popgrid.org/uscb
+#
+# NASA SEDAC used is version 4.
+# It pertains to data collected between
+# 2005-2014.
 # -- NASA SEDAC GPWv4: http://sedac.ciesin.columbia.edu/data/collection/gpw-v4
 #
 # Documents: http://sedac.ciesin.columbia.edu/downloads/on-demand/gpw/doc/GPWv4_Revision_10_documentation.zip

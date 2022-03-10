@@ -3,7 +3,6 @@
 # and the remaining 2018 data that uses the NIBRS method.
 
 library(tidyverse)
-library(stringr)
 library(rvest)
 library(curl)
 

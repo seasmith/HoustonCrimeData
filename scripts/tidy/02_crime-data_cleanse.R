@@ -2,7 +2,7 @@ library(lubridate)
 library(tidyverse)
 load("data/crime_data_raw.RData")
 
-END_MONTH <- as.Date("2020-09-01")
+END_MONTH <- as.Date("2022-01-01")
 
 crime_data <- crime_data_raw %>%
   filter(between(year(occurrence_date), 2010, 2020)) %>%

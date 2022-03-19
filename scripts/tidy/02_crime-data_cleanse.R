@@ -66,5 +66,5 @@ crime_data <- complete(crime_data, offense_type, occurrence_date, occurrence_hou
 
 
 # SAVE IT -----------------------------------------------------------------
-
-save(hou, file = "data/crime_data.RData")
+hou <- crime_data # historical mistake?
+save(hou, file = "data/hou.RData")

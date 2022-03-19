@@ -34,18 +34,53 @@ dest <- "data/hou_crime_data"
 all_files <- dest %>%
   list.files(full.names = TRUE)
 
+# Prior to 2019 HPD tracked monthly crimes in monthly files.
+# Full year crime stats now have their own file and new(current)
+# year crime stats are in the "incomplete" file.
 month_files <- all_files[str_detect(all_files, "complete|incomplete", negate = TRUE)]
-year_files  <- all_files[str_detect(all_files, "complete|incomplete", negate = FALSE)]
+year_files_complete  <- all_files[str_detect(all_files, "[^in]complete", negate = FALSE)]
+year_files_incomplete  <- all_files[str_detect(all_files, "incomplete", negate = FALSE)]
 
+# HPD switched to NIBRS reporting in 2018.
+# The following files are NIBRS and must be read differently.
 is_nibrs_file <- str_detect(month_files, paste(c("jun18", "jul18", "aug18", "sep18", 
                                                  "oct18", "nov18", "dec18"), collapse = "|"))
 
 nibrs_files <- month_files[is_nibrs_file]
 ucr_files   <- month_files[not(is_nibrs_file)]
 
+
+
+# NIBRS IMPORT AND CLEANUP ------------------------------------------------
 month_data_nibrs <- map_dfr(nibrs_files, read_excel, skip = 11)
-month_data_nibrs2 <- map_dfr(year_files, read_xlsx, col_types = c("text", "date", "text", "text",
-                                                                   "text", "numeric", rep("text", 8) ))
+year_data_nibrs_complete <- map_dfr(year_files_complete,
+                                    read_xlsx,
+                                    col_types = c("text", "date", "text", "text",
+                                                  "text", "numeric", rep("text", 8) ))
+year_data_nibrs_incomplete <- map_dfr(year_files_incomplete,
+                                      read_xlsx,
+                                      col_types = c("text", "date", "text", "text",
+                                                    "text", "numeric", rep("text", 10) ))
+
+year_data_nibrs <- bind_rows(year_data_nibrs_complete, 
+                             year_data_nibrs_incomplete)
+
+month_data_nibrs <- clean_names(month_data_nibrs)
+year_data_nibrs <- clean_names(year_data_nibrs)
+
+# do not select all NA columns
+month_data_nibrs <- month_data_nibrs %>%
+  select(where(function (x) (not(all(is.na(x))))))
+
+month_data_nibrs <- month_data_nibrs %>%
+  mutate(occurrence_date = as.Date(occurrence_date))
+
+year_data_nibrs <- year_data_nibrs %>%
+  mutate(occurrence_date = as.Date(occurrence_date))
+
+
+
+# UCR IMPORT AND CLEANUP --------------------------------------------------
 month_data_ucr <- ucr_files %>%
   map(read_excel) %>%
   set_names(file_path_sans_ext(basename(ucr_files)))
@@ -59,23 +94,9 @@ month_data_ucr <- month_data_ucr %>%
       mutate(.x, Date = as.Date(Date)) # RETURN
       }
   })
-
 # bind data
 month_data_ucr <- map_dfr(month_data_ucr, ~.x)
-
-month_data_nibrs <- clean_names(month_data_nibrs)
-month_data_nibrs2 <- clean_names(month_data_nibrs2)
-month_data_ucr   <- clean_names(month_data_ucr)
-
-# do not select all NA columns
-month_data_nibrs <- month_data_nibrs %>%
-  select(where(function (x) (not(all(is.na(x))))))
-
-month_data_nibrs <- month_data_nibrs %>%
-  mutate(occurrence_date = as.Date(occurrence_date))
-
-month_data_nibrs2 <- month_data_nibrs2 %>%
-  mutate(occurrence_date = as.Date(occurrence_date))
+month_data_ucr <- clean_names(month_data_ucr)
 
 month_data_ucr <- month_data_ucr %>%
   rename(occurrence_date = date,
@@ -96,8 +117,11 @@ month_data_ucr <- month_data_ucr %>%
   select(-number_of_offenses, -number_offenses, -number_offenses_2, -number_of, -offenses,
          -street_name_2, -block_range_2, -x2, -field11)
 
+
+# -------------------------------------------------------------------------
+# Combine monthly/yearly NIBRS w/ UCR
 crime_data_raw <- month_data_ucr %>%
-  bind_rows(month_data_nibrs, month_data_nibrs2)
+  bind_rows(month_data_nibrs, year_data_nibrs)
 
 assault_category <- c("Aggravated Assault")
 auto_theft_category <- c("Auto Theft",

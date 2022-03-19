@@ -1,7 +1,6 @@
 # This file downloads the NIBRS data 
 
 library(tidyverse)
-library(stringr)
 library(rvest)
 library(curl)
 

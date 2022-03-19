@@ -4,7 +4,7 @@
 hou_same_day <- hou_daily_summ %>%
   mutate(wday = wday(Date)) %>%
   group_by(wday, `Offense Type`) %>%
-  summarize(per_day = mean(n_offenses, na.rm = TRUE)) %>%
+  summarize(per_day = mean(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 #   -----------------------------------------------------------------------

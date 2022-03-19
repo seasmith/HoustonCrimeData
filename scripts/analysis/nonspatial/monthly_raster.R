@@ -1,6 +1,6 @@
 ## Give all months the same year for easier plotting
 hou_same_month <- hou_monthly %>%
-  mutate(mrate = ((n_offenses / pop) * 10^5),
+  mutate(mrate = ((offense_count / pop) * 10^5),
          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
   mutate(year = year(Date),
          Date = update(as.Date(Date), year = 2017))

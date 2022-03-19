@@ -77,7 +77,7 @@ rose_diagrams <- function(var, clr) {
 hou_Hour_count <- hou %>%
   group_by(Hour,
            `Offense Type`) %>%
-  summarize(n_Hour = sum(n_offenses))
+  summarize(n_Hour = sum(offense_count))
 
 # Roses
 rose_garden <- Map(rose_diagrams, rev(as.character(unique(reorder(hou$`Offense Type`, hou$Hour, length)))), plt_colors)
@@ -173,7 +173,7 @@ hou_yearly <- hou_monthly %>%
   filter(year(as.Date(Date)) >= 2010) %>%
   group_by(`Offense Type`,
            year = year(as.Date(Date))) %>%
-  summarize(n_offenses = sum(n_offenses, na.rm = TRUE))
+  summarize(offense_count = sum(offense_count, na.rm = TRUE))
 
 
 
@@ -183,8 +183,8 @@ hou_plots$lines <- hou_monthly %>%
   ggplot(aes(Date)) +
   geom_line(aes(y = mva_6, group = `Offense Type`),
             color = "gray50", size = 0.7) +
-  geom_line(aes(y = n_offenses, color = n_offenses), size = 0.9) +
-  facet_wrap(~forcats::fct_rev(reorder(`Offense Type`, n_offenses, sum)),
+  geom_line(aes(y = offense_count, color = offense_count), size = 0.9) +
+  facet_wrap(~forcats::fct_rev(reorder(`Offense Type`, offense_count, sum)),
              scales = "free_y", ncol = 1) +
   scale_x_yearmon(expand = expand_scale()) +
   scale_y_continuous(expand = expand_scale()) +
@@ -207,7 +207,7 @@ hou_plots$lines <- hou_monthly %>%
 hou_plots$ridges_per_day <- hou %>%
   filter(year(Date) >= 2010) %>%
   group_by(Date, `Offense Type`) %>%
-  summarize(n = sum(n_offenses, na.rm = TRUE)) %>%
+  summarize(n = sum(offense_count, na.rm = TRUE)) %>%
   ungroup() %>%
   ggplot() +
   geom_density_ridges(aes(n, factor(year(Date)), fill = `Offense Type`),
@@ -227,7 +227,7 @@ hou_plots$ridges_per_day <- hou %>%
 hou_plots$ridges_per_month <- hou_monthly %>%
   filter(year(Date) >= 2010) %>%
   ggplot() +
-  geom_density_ridges(aes(n_offenses,
+  geom_density_ridges(aes(offense_count,
                           factor(year(as.Date(Date))), fill = `Offense Type`),
                       alpha = 0.8, color = "gray80") +
   scale_y_discrete(NULL,

@@ -17,9 +17,9 @@ lines <- hou_2017_daily %>%
     p <-  ggplot(.x, aes(x = Date)) +
       geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = Inf), harvey,
                 fill = "steelblue", inherit.aes = FALSE, alpha = 0.2) +
-      geom_area(aes(y = n_offenses), fill = "gray70", alpha = 0.1) +
-      # geom_line(aes(y = n_offenses), color = "white") +
-      geom_line(aes(y = n_offenses), color = picked_colors[.y], size = 0.6) +
+      geom_area(aes(y = offense_count), fill = "gray70", alpha = 0.1) +
+      # geom_line(aes(y = offense_count), color = "white") +
+      geom_line(aes(y = offense_count), color = picked_colors[.y], size = 0.6) +
       scale_x_date(NULL, expand = expand_scale(),
                    minor_breaks = NULL,
                    labels = if (any(grepl("Robberies|Aggravated Assaults|Burglaries|Other Thefts", this_level))) waiver() else NULL) +
@@ -83,9 +83,9 @@ lines <- hou_2017_daily %>%
   p <-  ggplot(.x, aes(x = Date)) +
    geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = Inf), harvey,
              fill = "steelblue", inherit.aes = FALSE, alpha = 0.2) +
-   geom_area(aes(y = n_offenses), fill = "gray70", alpha = 0.1) +
-   # geom_line(aes(y = n_offenses), color = "white") +
-   geom_line(aes(y = n_offenses), color = picked_colors[.y], size = 0.6) +
+   geom_area(aes(y = offense_count), fill = "gray70", alpha = 0.1) +
+   # geom_line(aes(y = offense_count), color = "white") +
+   geom_line(aes(y = offense_count), color = picked_colors[.y], size = 0.6) +
    scale_x_date(NULL, expand = expand_scale(),
                 minor_breaks = NULL,
                 labels = waiver()) +

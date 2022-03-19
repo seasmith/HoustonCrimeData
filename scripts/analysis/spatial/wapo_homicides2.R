@@ -26,7 +26,7 @@ mr <- st_read("data/Major_Roads/Major_Roads.gdb")
 # TIDY --------------------------------------------------------------------
 # Return only murders
 hou <- hou %>%
-  filter(n_offenses > 0 & `Offense Type` == "Murders")
+  filter(offense_count > 0 & `Offense Type` == "Murders")
 
 # Coerce `Date` to class Date
 hou <- hou %>%

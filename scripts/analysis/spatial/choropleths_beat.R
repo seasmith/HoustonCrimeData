@@ -27,24 +27,24 @@ roads <- st_transform(roads, crs = st_crs(4326))
 load("data/hou_pop.RData")
 
 hpb_daily_summ <- hou %>%
-  mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses)) %>%
+  mutate(offense_count = if_else(is.na(offense_count), 0, offense_count)) %>%
   group_by(Date = as.Date(Date),
            `Offense Type`,
            Beat) %>%
-  summarize(n_offenses = sum(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 # Summarize the number of offense by year,
 # offense type, and police beat.
 hpb_yearly <- hpb_daily_summ %>%
   group_by(year = year(Date), `Offense Type`, Beat) %>%
-  summarize(n_offenses = sum(n_offenses)) %>%
+  summarize(offense_count = sum(offense_count)) %>%
   ungroup()
 
 # Get proportion of offenses in each beat.
 hpb_yearly <- hpb_yearly %>%
   group_by(year, `Offense Type`) %>%
-  mutate(prop_off = n_offenses / sum(n_offenses)) %>%
+  mutate(prop_off = offense_count / sum(offense_count)) %>%
   ungroup()
 
 beat_join <- expand.grid(Beat = unique(hpb_yearly$Beat),
@@ -76,10 +76,10 @@ unknowns <- hpb_yearly %>%
 hpb_yearly <- hpb_yearly %>%
   right_join(beat_join) %>%
   left_join(hou_pop_long, by = c("Beat" = "Beats", "year")) %>%
-  mutate(n_offenses = if_else(is.na(n_offenses), 0, n_offenses),
+  mutate(offense_count = if_else(is.na(offense_count), 0, offense_count),
          prop_off = if_else(is.na(prop_off), 0, prop_off)) %>%
   group_by(year) %>%
-  mutate(rate = (n_offenses / pop) * 10^5) %>%
+  mutate(rate = (offense_count / pop) * 10^5) %>%
   ungroup() %>%
   left_join(select(bp, Beats, geometry), by = c("Beat" = "Beats")) %>%
   st_sf()
@@ -93,7 +93,7 @@ hpb_yearly <- hpb_yearly %>%
 #   group_by(violent = `Offense Type` %in% c("Aggravated Assaults", "Murders",
 #                                            "Rapes", "Robberies"),
 #            Beat, year) %>%
-#   summarize(n_offenses = sum(n_offenses, na.rm = TRUE),
+#   summarize(offense_count = sum(offense_count, na.rm = TRUE),
 #             beat_pop = mean(beat_pop),
 #             area_sq_mi = mean(area_sq_mi),
 #             pop_ds = mean(pop_ds),
@@ -101,7 +101,7 @@ hpb_yearly <- hpb_yearly %>%
 #   ungroup()
 # 
 # violence <- violence %>%
-#   mutate(rate = (n_offenses / beat_pop) * 10^5)
+#   mutate(rate = (offense_count / beat_pop) * 10^5)
 
 
 #   -----------------------------------------------------------------------
@@ -202,7 +202,7 @@ labels <- sprintf(paste0("Police Beat: %s<br/>Offense Rate: %s<br/>",
                          "Offense Total: %s<br/>Offense Percent: %s<br/>",
                          "Population Total: %s<br/>Population Density: %s / sq mi"),
                   leafdata$Beat, pretty(round(leafdata$rate, 0)),
-                  pretty(leafdata$n_offenses),
+                  pretty(leafdata$offense_count),
                   percent(leafdata$prop_off),
                   pretty(round(leafdata$pop, 0)),
                   pretty(round(leafdata$den, 0))) %>%

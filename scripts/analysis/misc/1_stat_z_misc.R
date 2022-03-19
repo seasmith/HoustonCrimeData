@@ -4,8 +4,8 @@
 ## DAILY
 hou_daily_summ %>%
   ggplot() +
-  geom_point(aes(Date, n_offenses, color = `Offense Type`), alpha = 0.1) +
-  geom_smooth(aes(Date, n_offenses, group = `Offense Type`, color = `Offense Type`), method = "lm") +
+  geom_point(aes(Date, offense_count, color = `Offense Type`), alpha = 0.1) +
+  geom_smooth(aes(Date, offense_count, group = `Offense Type`, color = `Offense Type`), method = "lm") +
   scale_color_viridis_d(begin = 0.4) +
   facet_wrap(~`Offense Type`, scales = "free_y") +
   guides(color = FALSE) +
@@ -14,8 +14,8 @@ hou_daily_summ %>%
 ## MONTHLY
 hou_monthly %>%
   ggplot() +
-  geom_point(aes(Date, n_offenses, color = `Offense Type`), alpha = 0.3) +
-  geom_smooth(aes(Date, n_offenses, group = `Offense Type`, color = `Offense Type`), method = "lm", se = FALSE) +
+  geom_point(aes(Date, offense_count, color = `Offense Type`), alpha = 0.3) +
+  geom_smooth(aes(Date, offense_count, group = `Offense Type`, color = `Offense Type`), method = "lm", se = FALSE) +
   scale_color_viridis_d(begin = 0.4) +
   facet_wrap(~`Offense Type`, scales = "free_y") +
   guides(color = FALSE) +
@@ -34,10 +34,10 @@ hou_monthly %>%
 year_summary <- hou %>%
   group_by(year = year(Date),
            `Offense Type`) %>%
-  summarize(n_offenses = sum(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup() %>%
   left_join(hou_pop) %>%
-  mutate(rate = (n_offenses / pop) * 10^5) %>%
+  mutate(rate = (offense_count / pop) * 10^5) %>%
   mutate(rate = if_else(year == 2017, rate * (12 / 11), rate)) %>%
   split(.$`Offense Type`) %>%
   map2(seq_along(.), ~{
@@ -218,7 +218,7 @@ y_labels <- as.character(unique(hou_monthly$`Offense Type`))
 hou_cr_seasonal <- hou_monthly %>%
   select(1,2,3) %>%
   group_by(`Offense Type`, month = month(Date)) %>%
-  summarize(n_offenses = mean(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = mean(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 
@@ -229,18 +229,18 @@ hou_monthly2 <- hou_monthly %>%
 
 hou_cr_ribbon <- hou_monthly2 %>%
   group_by(`Offense Type`, month) %>%
-  filter(n_offenses == max(n_offenses) |
-           n_offenses == min(n_offenses)) %>%
-  arrange(n_offenses) %>%
+  filter(offense_count == max(offense_count) |
+           offense_count == min(offense_count)) %>%
+  arrange(offense_count) %>%
   filter(row_number() == 1 | row_number() == n()) %>%
-  mutate(cat = if_else(n_offenses == max(n_offenses), "max", "min")) %>%
+  mutate(cat = if_else(offense_count == max(offense_count), "max", "min")) %>%
   ungroup() %>%
   select(1, 3, 4, 6)
 
 hou_cr_ribbon <- hou_cr_ribbon %>%
   split(.$`Offense Type`) %>%
   map(~split(.x, .x$month)) %>%
-  modify_depth(2, ~spread(select(.x, -month), cat, n_offenses)) %>%
+  modify_depth(2, ~spread(select(.x, -month), cat, offense_count)) %>%
   map(~bind_rows(.x, .id = "month")) %>%
   bind_rows() %>%
   mutate_at(vars(month), as.integer)
@@ -257,7 +257,7 @@ ribs <- map2(k, picked_colors, ~{
   p <-  d %>%
     ggplot() +
     geom_ribbon(aes(month, ymin = min, ymax = max), fill = .y, color = "gray80") +
-    geom_line(aes(month, n_offenses),
+    geom_line(aes(month, offense_count),
               e, size = 0.8, color = "gray30") +
     scale_x_continuous(NULL,
                        breaks = ribbon_breaks,

@@ -18,7 +18,7 @@ ridges <- hou_daymon %>%
     this_level <- levels(.x$`Offense Type`)[.y]
     
     ggplot(.x) +
-      geom_density_ridges(aes(n_offenses, factor(year(Date)), height = ..density..),
+      geom_density_ridges(aes(offense_count, factor(year(Date)), height = ..density..),
                           panel_scaling = TRUE, fill = picked_colors[.y],
                           alpha = 0.7, color = "#00000000", rel_min_height = 0.01,
                           stat = "density") +

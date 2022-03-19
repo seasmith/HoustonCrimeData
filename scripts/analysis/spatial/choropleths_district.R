@@ -13,13 +13,13 @@ hpd_monthly <- hou %>%
   group_by(`Offense Type`,
            Date = as.yearmon(Date),
            DISTRICT) %>%
-  summarize(n_offenses = sum(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 hpd_monthly <- hpd_monthly %>%
   mutate(year = year(as.Date(Date))) %>%
   left_join(hou_pop, by = "year") %>%
-  mutate(rate = (n_offenses / pop) * 10^5)
+  mutate(rate = (offense_count / pop) * 10^5)
 
 
 
@@ -39,7 +39,7 @@ hpd_daily <- hou %>%
   group_by(Date = as.Date(Date),
            DISTRICT,
            `Offense Type`) %>%
-  summarize(n_offenses = sum(n_offenses)) %>%
+  summarize(offense_count = sum(offense_count)) %>%
   ungroup()
 
 
@@ -51,24 +51,24 @@ hpd_yearly <- hpd_daily %>%
   group_by(year = year(Date),
            DISTRICT,
            `Offense Type`) %>%
-  summarize(n_offenses = sum(n_offenses)) %>%
+  summarize(offense_count = sum(offense_count)) %>%
   ungroup() %>%
   left_join(hou_pop, by = "year") %>%
-  mutate(rate = (n_offenses / pop) * 10^5)
+  mutate(rate = (offense_count / pop) * 10^5)
 
 hpd_yearly <- hpd_yearly %>%
   right_join(expand.grid(year = 2010:2017,
                          DISTRICT = c(1:21, 23:24),
                          `Offense Type` = unique(hpd_yearly$`Offense Type`)),
              by = c("year", "DISTRICT", "Offense Type")) %>%
-  mutate_at(vars(n_offenses, rate), function(x) if_else(is.na(x), 0, x))
+  mutate_at(vars(offense_count, rate), function(x) if_else(is.na(x), 0, x))
 
 choro_yearly <- hpd_yearly %>%
   left_join(hpd, by = "DISTRICT") %>%
   split(.$`Offense Type`) %>%
   map2(seq_along(.), ~{
     ggplot(.x) +
-      geom_sf(aes(fill = n_offenses, geometry = Shape)) +
+      geom_sf(aes(fill = offense_count, geometry = Shape)) +
       scale_fill_viridis_c() +
       scale_x_continuous(expand = expand_scale()) +
       scale_y_continuous(expand = expand_scale()) +
@@ -88,7 +88,7 @@ choro_2016 <- hpd_yearly %>%
     this_level <- levels(.x$`Offense Type`)[.y]
     
     p <- ggplot(.x) +
-      geom_sf(aes(fill = n_offenses, geometry = Shape), color = "gray10") +
+      geom_sf(aes(fill = offense_count, geometry = Shape), color = "gray10") +
       geom_sf(aes(geometry = Shape), roads, color = "#a5872a", alpha = 0.3) +
       scale_fill_viridis_c(NULL,
                            labels = comma, breaks = pretty_breaks(3)) +
@@ -163,7 +163,7 @@ choro_beat_2016 <- hpd_yearly %>%
     this_level <- levels(.x$`Offense Type`)[.y]
     
     p <- ggplot(.x) +
-      geom_sf(aes(fill = n_offenses), color = "gray10") +
+      geom_sf(aes(fill = offense_count), color = "gray10") +
       geom_sf(aes(geometry = Shape), roads, color = "#a5872a", alpha = 0.3) +
       scale_fill_viridis_c(NULL,
                            labels = comma, breaks = pretty_breaks(3)) +

@@ -4,14 +4,14 @@
 
 hou_hourly <- hou %>%
   group_by(Date, hour = hour(Date), `Offense Type`) %>%
-  summarize(n_offenses = sum(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 hou_same_hour <- hou_hourly %>%
   mutate(Date = update(Date, yday = 1),
          Date = update(Date, year = 2017)) %>%
   group_by(Date, `Offense Type`) %>%
-  summarize(n_offenses = mean(n_offenses, na.rm = TRUE)) %>%
+  summarize(offense_count = mean(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
 mpop <- hou_pop %>%
@@ -20,14 +20,14 @@ mpop <- hou_pop %>%
 
 hou_same_hour <- hou_same_hour %>%
   add_column(mpop = mpop) %>%
-  mutate(drate = (n_offenses / mpop) * 10^5)
+  mutate(drate = (offense_count / mpop) * 10^5)
 
 splines_hourly <- hou_same_hour %>%
   split(.$`Offense Type`) %>%
   map2(seq_along(.), ~{
     
     ggplot(.x) +
-      geom_xspline(aes(Date, n_offenses),
+      geom_xspline(aes(Date, offense_count),
                    color = picked_colors[.y], size = 1) +
       scale_x_datetime(expand = expand_scale(), date_labels = "%I %p") +
       scale_y_continuous(expand = expand_scale()) +

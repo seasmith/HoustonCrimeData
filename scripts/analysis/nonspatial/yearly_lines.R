@@ -43,7 +43,7 @@ hou_yearly %>%
 yearly_lines <- hou_daily_summ %>%
   arrange(`Offense Type`, Date) %>%
   group_by(year = year(Date), `Offense Type`) %>%
-  mutate(csum = cumsum(n_offenses)) %>%
+  mutate(csum = cumsum(offense_count)) %>%
   ungroup() %>%
   mutate(same_date = update(Date, year = 2017)) %>%
   split(.$`Offense Type`) %>%

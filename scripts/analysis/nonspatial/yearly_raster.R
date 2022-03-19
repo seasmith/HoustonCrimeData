@@ -2,7 +2,7 @@ w = 700 / 100
 h = 80 / 100
 
 yearly_rasters <- hou_monthly %>%
-  mutate(mrate = ((n_offenses / pop) * 10^5),
+  mutate(mrate = ((offense_count / pop) * 10^5),
          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
   split(.$`Offense Type`) %>%
   map2_chr(seq_along(.), ~{
@@ -35,7 +35,7 @@ i %>%
   image_append(stack = TRUE)
 
 axis_plot <- hou_monthly %>%
-  mutate(mrate = ((n_offenses / pop) * 10^5),
+  mutate(mrate = ((offense_count / pop) * 10^5),
          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
   filter(`Offense Type` == "Aggravated Assaults") %>%
   ggplot(aes(Date, `Offense Type`)) +
@@ -100,7 +100,7 @@ file.remove(yearly_rasters)
 h = 395 / 100
 
 hou_monthly %>%
-  mutate(mrate = ((n_offenses / pop) * 10^5),
+  mutate(mrate = ((offense_count / pop) * 10^5),
          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
   group_by(`Offense Type`) %>%
   mutate(index_mrate = index(norm_mrate)) %>%
@@ -123,7 +123,7 @@ hou_monthly %>%
 # TEST --------------------------------------------------------------------
 
 # assaults <- hou_monthly %>%
-#   mutate(mrate = ((n_offenses / pop) * 10^5),
+#   mutate(mrate = ((offense_count / pop) * 10^5),
 #          norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>%
 #   filter(`Offense Type` == "Aggravated Assaults") %>%
 #   ggplot(aes(factor(Date), `Offense Type`)) +
@@ -146,5 +146,5 @@ hou_monthly %>%
 # x_line <- a %>%
 #   axis_canvas("x") +
 #   geom_line(aes(Date, norm_mrate), data = hou_monthly %>%
-#               mutate(mrate = ((n_offenses / pop) * 10^5),
+#               mutate(mrate = ((offense_count / pop) * 10^5),
 #                      norm_mrate = mrate * (31 / days_in_month(as.Date(Date)))) %>% filter(`Offense Type` == "Aggravated Assaults"))

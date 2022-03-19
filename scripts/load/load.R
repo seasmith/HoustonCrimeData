@@ -167,8 +167,9 @@ harvey <- tibble(start = as.Date("2017-08-25"), end = as.Date("2017-08-28"))
 #    * Join population data and create a `rate` column
 
 hou_monthly <- hou %>%
-  group_by(`Offense Type`,
-           Date = as.yearmon(Date)) %>%
+  mutate(Date = as.yearmon(occurrence_date)) %>%
+  group_by(offense_type,
+           Date) %>%
   summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
@@ -184,9 +185,10 @@ hou_monthly <- hou_monthly %>%
 #  Join population data and create `rate` column
 
 hou_daily_summ <- hou %>%
-  mutate(offense_count = if_else(is.na(offense_count), 0, offense_count)) %>%
-  group_by(Date = as.Date(Date),
-           `Offense Type`) %>%
+  mutate(offense_count = if_else(is.na(offense_count), 0, offense_count),
+         Date = as.Date(occurrence_date)) %>%
+  group_by(Date,
+           offense_type) %>%
   summarize(offense_count = sum(offense_count, na.rm = TRUE)) %>%
   ungroup()
 
@@ -197,7 +199,7 @@ hou_daily_summ <- hou_daily_summ %>%
 
 # Get yearly data
 hou_yearly <- hou_daily_summ %>%
-  group_by(year = year(Date), `Offense Type`, pop) %>%
+  group_by(year = year(Date), offense_type, pop) %>%
   summarize(offense_count = sum(offense_count)) %>%
   ungroup() %>%
   mutate(rate = (offense_count / pop) * 10^5)

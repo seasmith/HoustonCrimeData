@@ -7,7 +7,8 @@ library(rlang)
 
 # IMPORT ------------------------------------------------------------------
 
-load("data/hou_orig.RData")
+# load("data/hou_orig.RData") ???
+load("data/hou.RData")
 bp <- st_read("data/Houston_Police_Beats/Houston_Police_Beats.shp")
 hou_add <- "data/US_South_Addresses/us/tx" %>%
  list.files("\\.csv$", full.names = TRUE) %>%

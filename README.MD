@@ -9,12 +9,16 @@ Run order for files in `scripts`
 
 ### Mandatory
 
+#### IMPORT
 * `import/01_historical-ucr-data.R` -- downloads the historical UCR data (2009-May 2018) as well as the remaining 2018 data that uses the NIBRS method.
 * `import/02_current-nibrs-data.R` -- downloads NIBRS data (2019-present); requires manually validation and updating
 * `import/03_non-crime-data.R` -- downloads police beats and districts (map), major roads, and a few other items
+
+#### TIDY
 * `tidy/01_crime-data_combine.R` -- read all crime data files into single table
 * `tidy/02_crime-data_cleanse.R` -- resolve anomalies within data (categories, etc)
 * `tidy/03_grided-population-data_extract.R` -- use grided population data to estimate police beat population
+* `tidy/06_maps_simplify.R` -- simplify the police beats
 * `tidy/07_leaflet-data_setup.R` -- produce datasets to feed directly into leaflet (in the app). You will need to mainly copy and paste the new datasets into the HoustonCrimeViewer `/data/` folder.
 
 ### Optional

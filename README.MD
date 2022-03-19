@@ -18,6 +18,9 @@ Run order for files in `scripts`
 * `tidy/01_crime-data_combine.R` -- read all crime data files into single table
 * `tidy/02_crime-data_cleanse.R` -- resolve anomalies within data (categories, etc)
 * `tidy/03_grided-population-data_extract.R` -- use grided population data to estimate police beat population
+  * :exclamation: :exclamation: __There is a missing step here -- the script requires a GPW_TX file (texas portion of the GPW grided data set)__
+  * I don't know where that script is located
+  * I'll do my best to find solution (dropboxing the file or wedging in a new file)
 * `tidy/06_maps_simplify.R` -- simplify the police beats
 * `tidy/07_leaflet-data_setup.R` -- produce datasets to feed directly into leaflet (in the app). You will need to mainly copy and paste the new datasets into the HoustonCrimeViewer `/data/` folder.
 

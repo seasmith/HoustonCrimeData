@@ -7,8 +7,9 @@ library(readxl)
 library(tools)
 library(janitor)
 
-not_one_of <- compose(`-`, one_of)
-not <- `!`
+source("scripts/functions/functions.R")
+# not_one_of()
+# not()
 
 
 # NOTES -------------------------------------------------------------------
@@ -41,7 +42,7 @@ month_files <- all_files[str_detect(all_files, "complete|incomplete", negate = T
 year_files_complete  <- all_files[str_detect(all_files, "[^in]complete", negate = FALSE)]
 year_files_incomplete  <- all_files[str_detect(all_files, "incomplete", negate = FALSE)]
 
-# HPD switched to NIBRS reporting in 2018.
+# HPD switched to NIBRS reporting in June 2018.
 # The following files are NIBRS and must be read differently.
 is_nibrs_file <- str_detect(month_files, paste(c("jun18", "jul18", "aug18", "sep18", 
                                                  "oct18", "nov18", "dec18"), collapse = "|"))
@@ -76,9 +77,18 @@ month_data_nibrs <- month_data_nibrs %>%
   mutate(occurrence_date = as.Date(occurrence_date))
 
 year_data_nibrs <- year_data_nibrs %>%
-  mutate(occurrence_date = as.Date(occurrence_date))
+  mutate(occurrence_date = as.Date(occurrence_date),
+         rms_occurrence_date = as.Date(rms_occurrence_date))
 
+# 2021-present have RMS* column names and NIBRS* column names
+year_data_nibrs <- year_data_nibrs %>%
+  mutate(occurrence_date = if_else(is.na(occurrence_date), rms_occurrence_date, occurrence_date),
+         occurrence_hour = if_else(is.na(occurrence_hour), rms_occurrence_hour, occurrence_hour)) %>%
+  mutate(nibrs_class = if_else(is.na(nibrs_class), nibrs_class_2, nibrs_class),
+         street_type = if_else(is.na(street_type), street_type_2, street_type))
 
+year_data_nibrs <- year_data_nibrs %>%
+  rename(offense_type = nibrs_description)
 
 # UCR IMPORT AND CLEANUP --------------------------------------------------
 month_data_ucr <- ucr_files %>%
@@ -100,8 +110,7 @@ month_data_ucr <- clean_names(month_data_ucr)
 
 month_data_ucr <- month_data_ucr %>%
   rename(occurrence_date = date,
-         occurrence_hour = hour,
-         nibrs_description = offense_type) %>%
+         occurrence_hour = hour) %>%
   mutate(offense_count = case_when(!is.na(number_of_offenses) ~ number_of_offenses,
                                         !is.na(number_offenses) ~ number_offenses,
                                         !is.na(number_of) ~ number_of,
@@ -122,47 +131,5 @@ month_data_ucr <- month_data_ucr %>%
 # Combine monthly/yearly NIBRS w/ UCR
 crime_data_raw <- month_data_ucr %>%
   bind_rows(month_data_nibrs, year_data_nibrs)
-
-assault_category <- c("Aggravated Assault")
-auto_theft_category <- c("Auto Theft",
-                         "AutoTheft", 
-                         "Motor vehicle theft",
-                         "Theft of motor vehicle parts or accessory")
-burglary_category <- c("Burglary")
-murder_category <- c("Murder, non-negligent", "Murder")
-rape_category <- c("Forcible rape",
-                   "Forcible sodomy",
-                   "Sexual assault with an object",
-                   "Statutory rape",
-                   "Rape")
-prostitution  <- c("Prostitution",
-                   "Purchasing prostitution",
-                   "Assisting or promoting prostitution")
-robbery_category <- c("Robbery")
-other_assault_category <- c("Simple assault")
-other_sex_offense <- c("Peeping tom", 
-                       "Forcible fondling",
-                       "Human Trafficking/Commercial Sex Act",
-                       prostitution)
-other_theft_category <- c("Identify theft",
-                          "Theft from building",
-                          "Theft of motor vehicle parts or accessory",
-                          "Theft from motor vehicle",
-                          "Theft")
-
-
-crime_data_raw <- crime_data_raw %>%
-  mutate(offense_type = case_when(nibrs_description %in% assault_category ~ "Aggravated Assault",
-                                  nibrs_description %in% auto_theft_category ~ "Auto Theft",
-                                  nibrs_description %in% burglary_category ~ "Burglary",
-                                  nibrs_description %in% murder_category ~ "Murder",
-                                  nibrs_description %in% rape_category ~ "Rape",
-                                  nibrs_description %in% robbery_category ~ "Robbery",
-                                  nibrs_description %in% other_theft_category ~ "Other Theft",
-                                  nibrs_description %in% prostitution ~ "Prostitution",
-                                  nibrs_description %in% other_assault_category ~ "Other Assault",
-                                  nibrs_description %in% other_sex_offense ~ "Other Sex Offense",
-                                  TRUE ~ nibrs_description))
-
 
 save(crime_data_raw, file = "data/crime_data_raw.RData")

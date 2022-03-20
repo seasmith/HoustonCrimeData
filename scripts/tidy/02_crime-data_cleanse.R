@@ -43,7 +43,7 @@ hou <- hou %>%
 
 # ALIGN OFFENSE DESCRIPTIONS ----------------------------------------------
 
-hou %>%
+hou <- hou %>%
   left_join(offense_classification,
             suffix = c("", ".keep"),
             by = c("offense_type" = "offense_description")) %>%

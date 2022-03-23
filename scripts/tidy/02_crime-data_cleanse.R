@@ -9,7 +9,7 @@ source("scripts/functions/functions.R")
 END_MONTH <- as.Date("2022-01-01") # cannot trust data's end date so easily
 
 hou <- crime_data_raw %>%
-  filter(occurrence_date <= month_end(END_MONTH))
+  filter(between(occurrence_date, as.Date("2010-01-01"), month_end(END_MONTH)))
 
 hou <- hou %>%
   filter(offense_type != "1") # I don't know what "1" is

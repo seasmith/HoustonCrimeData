@@ -83,9 +83,24 @@ rm(every_var_in_yearmon)
 # If not, then 'holes' will appear in plots
 # such as the `week_day ~ hour` tile plot.
 
+# Filter using last date UCR classification was used.
+UCR_END_DATE <- as.Date("2018-05-31")
+
+# Altered to reflect changes made with offense-description.csv.
+# Does not include "1" or NA.
+UCR_OFFENSE_TYPES <- c("Assault (Aggravated)",
+                       "Theft (Auto)",
+                       "Burglary",
+                       "Homicide (Murder)",
+                       "Sex Offense (Rape)",
+                       "Theft (Other)")
+ALL_OFFENSE_TYPES <- offense_classification$offense_type
+NOT_UCR_OFFENSE_TYPES <- ALL_OFFENSE_TYPES[!ALL_OFFENSE_TYPES %in% UCR_OFFENSE_TYPES]
 hou <- complete(hou, offense_type, occurrence_date, occurrence_hour)
 
+hou <- hou %>%
+  filter(!(occurrence_date <= UCR_END_DATE &
+           offense_type %in% NOT_UCR_OFFENSE_TYPES))
 
 # SAVE IT -----------------------------------------------------------------
-hou <- crime_data # historical mistake?
 save(hou, file = "data/hou.RData")

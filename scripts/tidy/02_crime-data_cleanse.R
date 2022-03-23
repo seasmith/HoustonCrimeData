@@ -51,7 +51,9 @@ hou <- hou %>%
   rename(offense_type = offense_type.keep) %>%
   select(1:2, offense_type, everything())
 
-
+# typo
+hou <- hou %>%
+  mutate(offense_type = if_else(offense_type == "AutoTheft", "Auto Theft", offense_type))
 
 # CHECK DATA --------------------------------------------------------------
 

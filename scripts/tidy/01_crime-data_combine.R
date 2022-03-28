@@ -53,15 +53,26 @@ ucr_files   <- month_files[not(is_nibrs_file)]
 
 
 # NIBRS IMPORT AND CLEANUP ------------------------------------------------
-month_data_nibrs <- map_dfr(nibrs_files, read_excel, skip = 11)
+month_data_nibrs <- map_dfr(nibrs_files, read_excel, skip = 11, .id = "vintage")
 year_data_nibrs_complete <- map_dfr(year_files_complete,
                                     read_xlsx,
                                     col_types = c("text", "date", "text", "text",
-                                                  "text", "numeric", rep("text", 8) ))
+                                                  "text", "numeric", rep("text", 8)),
+                                    .id = "vintage")
 year_data_nibrs_incomplete <- map_dfr(year_files_incomplete,
                                       read_xlsx,
                                       col_types = c("text", "date", "text", "text",
-                                                    "text", "numeric", rep("text", 10) ))
+                                                    "text", "numeric", rep("text", 10)),
+                                      .id = "vintage")
+
+month_data_nibrs <- month_data_nibrs %>%
+  mutate(vintage = tools::file_path_sans_ext(basename(nibrs_files[as.integer(vintage)])))
+
+year_data_nibrs_complete <- year_data_nibrs_complete %>%
+  mutate(vintage = tools::file_path_sans_ext(basename(year_files_complete[as.integer(vintage)])))
+
+year_data_nibrs_incomplete <- year_data_nibrs_incomplete %>%
+  mutate(vintage = tools::file_path_sans_ext(basename(year_files_incomplete[as.integer(vintage)])))
 
 year_data_nibrs <- bind_rows(year_data_nibrs_complete, 
                              year_data_nibrs_incomplete)

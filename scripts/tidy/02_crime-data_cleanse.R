@@ -93,14 +93,17 @@ UCR_OFFENSE_TYPES <- c("Assault (Aggravated)",
                        "Burglary",
                        "Homicide (Murder)",
                        "Sex Offense (Rape)",
+                       "Robbery",
                        "Theft (Other)")
 ALL_OFFENSE_TYPES <- offense_classification$offense_type
 NOT_UCR_OFFENSE_TYPES <- ALL_OFFENSE_TYPES[!ALL_OFFENSE_TYPES %in% UCR_OFFENSE_TYPES]
 hou <- complete(hou, offense_type, occurrence_date, occurrence_hour)
 
 hou <- hou %>%
-  filter(!(occurrence_date <= UCR_END_DATE &
-           offense_type %in% NOT_UCR_OFFENSE_TYPES))
+  # excluding all non-UCR offenses for now.
+  # filter(!(occurrence_date <= UCR_END_DATE &
+  #          offense_type %in% NOT_UCR_OFFENSE_TYPES))
+  filter(!offense_type %in% NOT_UCR_OFFENSE_TYPES)
 
 # SAVE IT -----------------------------------------------------------------
 save(hou, file = "data/hou.RData")

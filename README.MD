@@ -5,7 +5,9 @@ output:
 ---
 
 ## Run Order
-Run order for files in `scripts`
+* You can run `main.R` to run all of the import and tidy scripts. 
+* __OR__ you can run `main-import.R` and `main-tidy.R` separate (which is what `main.R` calls).
+* Run order for files in `scripts`
 
 ### Mandatory
 

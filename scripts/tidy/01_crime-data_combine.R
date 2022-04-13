@@ -122,8 +122,11 @@ month_data_ucr <- month_data_ucr %>%
       }
   })
 # bind data
-month_data_ucr <- map_dfr(month_data_ucr, ~.x)
+month_data_ucr <- map_dfr(month_data_ucr, ~.x, .id = "vintage")
 month_data_ucr <- clean_names(month_data_ucr)
+
+# month_data_ucr <- month_data_ucr %>%
+#   mutate(vintage = tools::file_path_sans_ext(basename(ucr_files[as.integer(vintage)])))
 
 month_data_ucr <- month_data_ucr %>%
   rename(occurrence_date = date,
@@ -147,6 +150,7 @@ month_data_ucr <- month_data_ucr %>%
 # -------------------------------------------------------------------------
 # Combine monthly/yearly NIBRS w/ UCR
 crime_data_raw <- month_data_ucr %>%
-  bind_rows(month_data_nibrs, year_data_nibrs)
+  bind_rows(month_data_nibrs, year_data_nibrs) %>%
+  select(vintage, everything())
 
 save(crime_data_raw, file = "data/crime_data_raw.RData")

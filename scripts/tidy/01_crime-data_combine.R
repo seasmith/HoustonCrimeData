@@ -65,15 +65,19 @@ year_data_nibrs_incomplete <- map_dfr(year_files_incomplete,
                                                     "text", "numeric", rep("text", 10)),
                                       .id = "vintage")
 
+# vintage
 month_data_nibrs <- month_data_nibrs %>%
   mutate(vintage = tools::file_path_sans_ext(basename(nibrs_files[as.integer(vintage)])))
 
+# vintage
 year_data_nibrs_complete <- year_data_nibrs_complete %>%
   mutate(vintage = tools::file_path_sans_ext(basename(year_files_complete[as.integer(vintage)])))
 
+# vintage
 year_data_nibrs_incomplete <- year_data_nibrs_incomplete %>%
   mutate(vintage = tools::file_path_sans_ext(basename(year_files_incomplete[as.integer(vintage)])))
 
+# combine
 year_data_nibrs <- bind_rows(year_data_nibrs_complete, 
                              year_data_nibrs_incomplete)
 
@@ -84,9 +88,11 @@ year_data_nibrs <- clean_names(year_data_nibrs)
 month_data_nibrs <- month_data_nibrs %>%
   select(where(function (x) (not(all(is.na(x))))))
 
+# convert to date
 month_data_nibrs <- month_data_nibrs %>%
   mutate(occurrence_date = as.Date(occurrence_date))
 
+# convert to date
 year_data_nibrs <- year_data_nibrs %>%
   mutate(occurrence_date = as.Date(occurrence_date),
          rms_occurrence_date = as.Date(rms_occurrence_date))

@@ -117,7 +117,7 @@ hpb_hourly_summed <- hpb_hourly %>%
 
 missing_weekdays <- expand.grid(beat = unique(hpb_hourly$beat),
                                 offense_type = unique(hpb_hourly$offense_type),
-                                year = 2010:2017, hour = seq(0, 23),
+                                year = 2010:CURRENT_YEAR, hour = seq(0, 23),
                                 week_day = levels(hpb_hourly$week_day)) %>%
   as_tibble() %>%
   mutate(week_day = factor(week_day, levels = levels(hpb_hourly_summed$week_day), ordered = TRUE))

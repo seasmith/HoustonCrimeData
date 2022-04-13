@@ -104,9 +104,14 @@ year_data_nibrs <- year_data_nibrs %>%
   mutate(nibrs_class = if_else(is.na(nibrs_class), nibrs_class_2, nibrs_class),
          street_type = if_else(is.na(street_type), street_type_2, street_type))
 
+# rename nibrs_description to offense_type
 year_data_nibrs <- year_data_nibrs %>%
   rename(offense_type = nibrs_description)
 
+# rename nibrs_description to offense_type
+month_data_nibrs <- month_data_nibrs %>%
+  rename(offense_type = nibrs_description)
+  
 # UCR IMPORT AND CLEANUP --------------------------------------------------
 month_data_ucr <- ucr_files %>%
   map(read_excel) %>%

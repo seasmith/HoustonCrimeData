@@ -9,6 +9,14 @@ source("scripts/functions/functions.R")
 END_MONTH <- as.Date("2022-01-01") # cannot trust data's end date so easily
 
 hou <- crime_data_raw %>%
+  {
+    if (sum(is.na(.$offense_type)) == 4) {
+      filter(., !is.na(offense_type))
+    } else {
+      warning("More than 4 rows w/ NA offense_type! Inspect.")
+      filter(., !is.na(offense_type))
+    }
+  } %>%
   filter(between(occurrence_date, as.Date("2010-01-01"), month_end(END_MONTH)))
 
 hou <- hou %>%
